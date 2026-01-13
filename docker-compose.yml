@@ -1,0 +1,15 @@
+# docker compose
+
+name: hygoal
+
+services:
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "5520:5520"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - ENV=production
