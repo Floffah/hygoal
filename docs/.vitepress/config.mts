@@ -27,6 +27,7 @@ export default defineConfig({
                     text: 'Hytale Protocol Definitions',
                     items: [
                         {text: 'Introduction', link: '/protocol/'},
+                        {text: 'Data Types', link: '/protocol/datatypes'},
                         {text: 'Login', link: '/protocol/login'},
                     ]
                 },
