@@ -2,6 +2,7 @@ import {defineConfig} from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+    base: "/hygoal",
     title: "Hygoal Docs & Hytale Protocol",
     description: "Documentation for the Hygoal Hytale server AND Hytale protocol definitions",
     themeConfig: {
@@ -26,7 +27,7 @@ export default defineConfig({
                     text: 'Hytale Protocol Definitions',
                     items: [
                         {text: 'Introduction', link: '/protocol/'},
-                        {text: 'Handshake', link: '/protocol/handshake'},
+                        {text: 'Login', link: '/protocol/login'},
                     ]
                 },
             ]

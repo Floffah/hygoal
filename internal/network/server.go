@@ -1,17 +1,14 @@
 package network
 
 import (
+	"bytes"
 	"context"
-	"crypto/ed25519"
-	"crypto/rand"
-	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
+	"encoding/binary"
 	"fmt"
-	"math/big"
+	"hygoal/internal/protocol"
+	"log"
 	"net"
 	"os"
-	"time"
 
 	"github.com/quic-go/quic-go"
 )
@@ -30,7 +27,14 @@ func StartQuicServer() error {
 		Conn: udpConn,
 	}
 
-	listener, err := transport.Listen(generateTLSConfig(), nil)
+	cert, err := NewSelfSignedServerCert("localhost")
+	if err != nil {
+		log.Fatalf("generating self-signed cert: %v", err)
+	}
+
+	tlsConf := NewQUICServerTLSConfig(cert)
+
+	listener, err := transport.Listen(tlsConf, nil)
 	if err != nil {
 		return err
 	}
@@ -57,70 +61,78 @@ func handleConnection(conn *quic.Conn) {
 			conn.CloseWithError(0, "error accepting stream")
 			return
 		}
-		fmt.Println("Accepted stream")
 
-		buf := make([]byte, 1024)
-		n, err := stream.Read(buf)
-		if err != nil {
-			stream.Close()
-			continue
+		for {
+			// packet length
+			var packetLen uint32
+			lenBuf := make([]byte, 4)
+			_, err = stream.Read(lenBuf)
+			if err != nil {
+				break
+			}
+			lenReader := bytes.NewReader(lenBuf)
+			err = binary.Read(lenReader, binary.LittleEndian, &packetLen)
+			if err != nil {
+				log.Printf("error reading packet length: %v", err)
+				break
+			}
+
+			// packet data
+			packetData := make([]byte, packetLen+4)
+			_, err = stream.Read(packetData)
+			if err != nil {
+				log.Printf("error reading packet data: %v", err)
+				break
+			}
+
+			// decode packet ID
+			var packetID uint32
+			idBuf := bytes.NewReader(packetData[:4])
+			err = binary.Read(idBuf, binary.LittleEndian, &packetID)
+			if err != nil {
+				log.Printf("error reading packet ID: %v", err)
+				continue
+			}
+
+			packet, err := protocol.DecodeByID(packetID, packetData[4:])
+			if err != nil {
+				log.Printf("error decoding packet ID %d: %v", packetID, err)
+				continue
+			}
+
+			log.Printf("Received packet ith ID %d: %+v", packetID, packet)
 		}
 
-		// write out to file
-		f, err := os.OpenFile("received_data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			stream.Close()
-			continue
-		}
+		//err = debug_writeStream(stream)
+		//if err != nil {
+		//	log.Printf("error handling stream: %v", err)
+		//}
 
-		if _, err := f.Write(buf[:n]); err != nil {
-			f.Close()
-			stream.Close()
-			continue
-		}
-		f.Close()
 		stream.Close()
 	}
 }
 
-func generateTLSConfig() *tls.Config {
-	_, priv, err := ed25519.GenerateKey(rand.Reader)
+func debug_writeStream(stream quic.Stream) error {
+	buf := make([]byte, 1024)
+	n, err := stream.Read(buf)
 	if err != nil {
-		panic(err)
+		stream.Close()
+		return err
 	}
 
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	// write out to file
+	f, err := os.OpenFile("received_data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		stream.Close()
+		return err
 	}
 
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			Organization: []string{"Hygoal"},
-		},
-		NotBefore: time.Now(),
-		NotAfter:  time.Now().Add(365 * 24 * time.Hour),
-		KeyUsage:  x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage: []x509.ExtKeyUsage{
-			x509.ExtKeyUsageServerAuth,
-		},
-		BasicConstraintsValid: true,
+	if _, err := f.Write(buf[:n]); err != nil {
+		f.Close()
+		stream.Close()
+		return err
 	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, priv.Public(), priv)
-	if err != nil {
-		panic(err)
-	}
-
-	cert := tls.Certificate{
-		Certificate: [][]byte{derBytes},
-		PrivateKey:  priv,
-	}
-
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		NextProtos:   []string{"hytale/1"},
-	}
+	f.Close()
+	stream.Close()
+	return nil
 }
