@@ -1,0 +1,1 @@
+Hytale communicates over Quic (UDP)
