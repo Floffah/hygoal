@@ -1,0 +1,11 @@
+{{- /*gotype: hygoal/tools/protogen/internal.FieldData*/ -}}
+{{- /* This assumes array template is preceding this*/}}
+
+{{$accPrefix := ""}}
+{{if eq .Field.Optional true}}
+	{{$accPrefix = "&" }}
+{{end}}
+
+{{capitalize .Field.Name}}Value := make([]byte, {{.Field.Name}}Len)
+copy({{capitalize .Field.Name}}Value, payload[{{.Field.Name}}Start:{{.Field.Name}}End])
+packet.{{capitalize .Field.Name}} = {{$accPrefix}}{{capitalize .Field.Name}}Value

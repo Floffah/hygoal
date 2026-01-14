@@ -1,0 +1,29 @@
+{{- /*gotype: hygoal/tools/protogen/internal.FieldData*/ -}}
+
+{{if eq .Field.Fixed true}}
+    {{.Field.Name}}Pos := {{.Offset}}
+{{else}}
+    {{.Field.Name}}Pos := {{.Offset}} + {{.Field.Name}}Offset
+{{end}}
+
+{{.Field.Name}}Len, {{.Field.Name}}LenSize, err := ReadVarInt(payload, {{.Field.Name}}Pos)
+if err != nil {
+	return nil, fmt.Errorf("error reading {{.Field.Name}} length: %v", err)
+}
+{{if ne .Field.Type.MinSize nil}}
+if {{.Field.Name}}Len < {{.Field.Type.MinSize}} {
+{{else}}
+if {{.Field.Name}}Len < 0 {
+{{end}}
+	return nil, fmt.Errorf("invalid {{.Field.Name}} length: %d", {{.Field.Name}}Len)
+}
+{{if ne .Field.Type.MaxSize nil}}
+if {{.Field.Name}}Len > {{.Field.Type.MaxSize}} {
+	return nil, fmt.Errorf("{{.Field.Name}} length too large: %d", {{.Field.Name}}Len)
+}
+{{end}}
+{{.Field.Name}}Start := {{.Field.Name}}Pos + {{.Field.Name}}LenSize
+{{.Field.Name}}End := {{.Field.Name}}Start + int({{.Field.Name}}Len)
+if {{.Field.Name}}End > len(payload) {
+	return nil, fmt.Errorf("{{.Field.Name}} data exceeds payload length")
+}

@@ -1,0 +1,95 @@
+
+[TestBasicPacket - 1]
+&protogen.FileNode{
+    Expressions: {
+        &protogen.PacketNode{
+            Name:   "LoginRequest",
+            ID:     0x1,
+            Fields: {
+                {
+                    Name: "username",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "string",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: false,
+                    Fixed:    true,
+                },
+                {
+                    Name: "password",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "string",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: false,
+                    Fixed:    true,
+                },
+                {
+                    Name: "someFixedField",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "int32",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: false,
+                    Fixed:    false,
+                },
+                {
+                    Name: "someOptionalField",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "int64",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: true,
+                    Fixed:    false,
+                },
+                {
+                    Name: "someBitSizeField",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "string",
+                        MinSize: (*int)(nil),
+                        MaxSize: &int(12),
+                    },
+                    Optional: false,
+                    Fixed:    false,
+                },
+            },
+        },
+    },
+}
+---
+
+[TestBasicType - 1]
+&protogen.FileNode{
+    Expressions: {
+        &protogen.TypeNode{
+            Name:   "HostAddress",
+            Fields: {
+                {
+                    Name: "port",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "uint16",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: false,
+                    Fixed:    true,
+                },
+                {
+                    Name: "hostname",
+                    Type: protogen.FieldTypeNode{
+                        Name:    "string",
+                        MinSize: (*int)(nil),
+                        MaxSize: (*int)(nil),
+                    },
+                    Optional: false,
+                    Fixed:    true,
+                },
+            },
+        },
+    },
+}
+---

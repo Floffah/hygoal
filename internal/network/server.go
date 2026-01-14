@@ -38,7 +38,8 @@ func StartQuicServer() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("QUIC server started")
+
+	fmt.Println("QUIC server accepting connections...")
 
 	for {
 		conn, err := listener.Accept(context.Background())

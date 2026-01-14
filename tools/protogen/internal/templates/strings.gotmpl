@@ -1,0 +1,24 @@
+{{- /*gotype: hygoal/tools/protogen/internal.FieldData*/ -}}
+
+{{$accPrefix := ""}}
+{{if eq .Field.Optional true}}
+	{{$accPrefix = "&" }}
+{{end}}
+
+{{if eq .Field.Fixed true}}
+{{.Field.Name}}Pos := {{.Offset}}
+{{else}}
+{{.Field.Name}}Pos := {{.Offset}} + {{.Field.Name}}Offset
+{{end}}
+
+{{if eq .Field.Type.MinSize nil}}
+{{.Field.Name}}Raw := payload[{{.Field.Name}}Pos:{{.Field.Type.MaxSize}}]
+{{.Field.Name}} := string({{.Field.Name}}Raw)
+{{else}}
+{{.Field.Name}}, _, err := ReadVarString(payload, {{.Field.Name}}Pos, {{.Field.Type.MaxSize}}, false)
+if err != nil {
+	return nil, fmt.Errorf("error reading {{.Field.Name}}: %v", err)
+}
+{{end}}
+
+packet.{{capitalize .Field.Name}} = {{$accPrefix}}{{.Field.Name}}

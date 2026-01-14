@@ -1,0 +1,15 @@
+{{- /*gotype: hygoal/tools/protogen/internal.FieldData*/ -}}
+
+{{$accPrefix := ""}}
+{{if eq .Field.Optional true}}
+	{{$accPrefix = "&" }}
+{{end}}
+
+{{if eq .Field.Fixed true}}
+{{.Field.Name}}Pos := {{.Offset}}
+{{else}}
+{{.Field.Name}}Pos := {{.Offset}} + {{.Field.Name}}Offset
+{{end}}
+
+{{.Field.Name}} := payload[{{.Field.Name}}Pos]
+packet.{{capitalize .Field.Name}} = {{$accPrefix}}{{.Field.Type.Name}}({{.Field.Name}})

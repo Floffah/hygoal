@@ -1,0 +1,20 @@
+{{- /*gotype: hygoal/tools/protogen/internal.FieldData*/ -}}
+
+{{$accPrefix := ""}}
+{{if eq .Field.Optional true}}
+	{{$accPrefix = "&" }}
+{{end}}
+
+var {{.Field.Name}} [16]byte
+{{if eq .Field.Fixed true}}
+{{.Field.Name}}Pos := {{.Offset}}
+{{else}}
+{{.Field.Name}}Pos := {{.Offset}} + {{.Field.Name}}Offset
+{{end}}
+copy({{.Field.Name}}[:], payload[{{.Field.Name}}Pos:{{.Field.Name}}Pos+16])
+
+var {{.Field.Name}}Slice []byte = {{.Field.Name}}[:]
+packet.{{capitalize .Field.Name}}, err = {{$accPrefix}}uuid.FromBytes({{.Field.Name}}Slice)
+if err != nil {
+	return nil, fmt.Errorf("failed to parse {{.Field.Name}}: %w", err)
+}

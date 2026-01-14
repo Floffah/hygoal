@@ -1,0 +1,15 @@
+enum ClientType {
+  GAME,
+  EDITOR
+}
+
+packet 0 Connect {
+  protocolHash ascii[64]
+  clientType ClientType
+  UUID uuid
+  @language? ascii[0:128]
+  @identityToken? utf8[0:8192]
+  @username ascii[0:16]
+  @referralData? array.byte[0:4096]
+  @referralSource? HostAddress
+}

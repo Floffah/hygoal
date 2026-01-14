@@ -4,10 +4,6 @@ import (
 	"fmt"
 )
 
-type Packet interface {
-	ID() uint32
-}
-
 type Decoder func(payload []byte) (Packet, error)
 
 var decoders = map[uint32]Decoder{}

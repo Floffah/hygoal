@@ -1,0 +1,24 @@
+# https://taskfile.dev
+
+$schema: https://taskfile.dev/schema.json
+version: '3'
+
+tasks:
+  run:
+    desc: Run Hygoal server
+    silent: true
+    cmds:
+      - go run ./cmd/hygoal/hygoal.go
+  prepare:
+    desc: Prepare environment
+    cmds:
+      - go mod tidy
+      - go generate ./...
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+  test-snaps:
+    desc: Run tests & update snapshots
+    cmds:
+      - UPDATE_SNAPS=true go test -v ./...

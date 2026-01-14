@@ -1,0 +1,18 @@
+{{- /*gotype: hygoal/tools/protogen/internal.DecodeData*/ -}}
+func Decode{{.Packet.Name}}(payload []byte) (Packet, error) {
+	{{- if gt .SizeOfFixedFrame 0}}
+	if len(payload) < {{.SizeOfFixedFrame}} {
+		return nil, fmt.Errorf("{{.Packet.Name}} payload too small: %d", len(payload))
+	}
+	{{- end}}
+
+	var err error
+	packet := &{{.Packet.Name}}{}
+
+	// optional fields bitfield
+	var nullBits byte = payload[0]
+
+    {{.ParsingBody}}
+
+	return packet, nil
+}
